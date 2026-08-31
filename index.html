@@ -2,164 +2,574 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#16845b">
 <title>ВЕАЛЬВЕД — мобильный сканер</title>
+
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <style>
-:root{--green:#16845b;--bg:#f0f4f8;--card:#fff;--text:#172b3a;--muted:#6b7a8a;--border:#dce4eb;--danger:#b33c3c}
+:root{
+  --green:#16845b;--green-dark:#0d6b48;--bg:#f1f4f7;--card:#fff;
+  --text:#172b3a;--muted:#667685;--border:#dbe3e9;
+  --good:#16845b;--bad:#b42318;--warn:#9a6700;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;min-height:100vh}
-.wrap{max-width:620px;margin:auto;padding:18px 14px 35px}
-.header,.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 5px 22px rgba(0,0,0,.06)}
-.header{padding:18px;margin-bottom:14px}.logo{font-size:24px;font-weight:800;letter-spacing:1px}.sub{font-size:12px;color:var(--muted);margin-top:3px}
-.status{display:flex;align-items:center;gap:8px;margin-top:15px;padding:11px 13px;border-radius:12px;background:#f5f7f9;font-size:13px;font-weight:700}
-.dot{width:10px;height:10px;border-radius:50%;background:#9aa6b2}.dot.good{background:#20a875}.dot.bad{background:#b33c3c}
-.card{padding:18px;margin-bottom:14px}h2{font-size:18px;margin:0 0 10px}p{font-size:13px;line-height:1.5;color:var(--muted)}
-.steps{margin:10px 0 14px;padding-left:21px;font-size:13px;line-height:1.8}
-button{width:100%;border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
-.primary{background:var(--green);color:#fff}.secondary{background:#eef2f5;color:var(--text)}.danger{background:#fbeaea;color:var(--danger)}
-button:disabled{opacity:.5;cursor:not-allowed}
-#pairQrReader,#serviceQrReader{width:100%;overflow:hidden;border-radius:14px}
-.result{display:none;padding:14px;border-radius:13px;background:#f4faf7;border:1px solid #cce9dc;margin-top:12px}.result.show{display:block}
-.result-title{font-size:17px;font-weight:800}.result-price{font-size:16px;font-weight:800;margin-top:4px}
-.code{font-family:ui-monospace,monospace;font-size:11px;word-break:break-all;background:#f4f5f7;padding:10px;border-radius:9px;margin-top:8px}
-.log{max-height:220px;overflow:auto}.log-item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}.small{font-size:11px;color:var(--muted)}
-.hidden{display:none!important}.notice{padding:11px 12px;background:#fff8e6;border:1px solid #f0dfab;border-radius:12px;font-size:12px;line-height:1.5;color:#735c16}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Segoe UI,sans-serif}
+.app{max-width:620px;margin:0 auto;padding:14px 14px 34px}
+.header,.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 5px 20px rgba(20,35,50,.06)}
+.header{padding:18px;margin-bottom:14px}
+.logo{font-size:24px;font-weight:800}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+.status{display:flex;gap:9px;align-items:center;padding:11px 12px;margin-top:14px;border-radius:12px;background:#f5f7f9;font-size:13px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;background:#98a2b3}.dot.good{background:#12b76a}.dot.bad{background:#f04438}.dot.warn{background:#f79009}
+.card{padding:17px;margin-bottom:14px}
+h2{font-size:18px;margin:0 0 9px}p{font-size:13px;line-height:1.55;color:var(--muted);margin:7px 0}
+button{width:100%;border:0;border-radius:12px;padding:13px 15px;margin-top:8px;font-size:15px;font-weight:700}
+.primary{background:var(--green);color:#fff}.primary:active{background:var(--green-dark)}
+.secondary{background:#edf1f4;color:var(--text)}.danger{background:#fdecec;color:var(--bad)}
+.hidden{display:none!important}
+#pairQrReader,#serviceQrReader{width:100%;overflow:hidden;border-radius:14px;margin-top:10px}
+.message{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px}
+.result{display:none;margin-top:12px;padding:13px;border-radius:12px;background:#f0faf5;border:1px solid #c7ead8}
+.result.show{display:block}.result-title{font-weight:800;font-size:17px}.result-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.history{max-height:250px;overflow:auto}.item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}.item:last-child{border-bottom:0}
+.small{font-size:11px;color:var(--muted)}.notice{font-size:12px;line-height:1.5;background:#fff8e7;border:1px solid #f1dfaa;border-radius:12px;padding:11px 12px}
+.debug{font-family:ui-monospace,Consolas,monospace;font-size:11px;white-space:pre-wrap;word-break:break-word;background:#f7f8fa;border-radius:10px;padding:10px;margin-top:9px}
 </style>
 </head>
+
 <body>
-<div class="wrap">
+<div class="app">
+
 <header class="header">
   <div class="logo">ВЕАЛЬВЕД</div>
-  <div class="sub">Мобильный QR-сканер для кассы</div>
-  <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Телефон не подключён</span></div>
+  <div class="sub">Мобильный сканер для кассы</div>
+  <div id="status" class="status">
+    <span id="dot" class="dot"></span>
+    <span id="statusText">Телефон не подключён</span>
+  </div>
 </header>
 
 <section class="card" id="pairCard">
   <h2>🔗 Сопряжение с компьютером</h2>
-  <p>На компьютере откройте основной сайт ВЕАЛЬВЕД → <b>Касса → Сопрячь телефон</b>. Затем наведите камеру телефона на QR-код с компьютера.</p>
-  <ol class="steps"><li>Нажмите кнопку.</li><li>Разрешите камеру.</li><li>Наведите её на QR сопряжения.</li></ol>
-  <button class="primary" id="pairBtn">📷 Сопрячь с компьютером</button>
-  <button class="secondary hidden" id="stopPairBtn">Остановить камеру</button>
-  <div id="pairReader" class="hidden" style="margin-top:12px"><div id="pairQrReader"></div></div>
-  <div id="pairMessage" class="small" style="margin-top:10px"></div>
+  <p>На компьютере откройте <b>Касса → Сопрячь телефон</b>. Затем нажмите кнопку ниже и наведите камеру на QR-код, который показывает компьютер.</p>
+  <button id="pairBtn" class="primary">📷 Сопрячь с компьютером</button>
+  <button id="pairStopBtn" class="secondary hidden">Остановить камеру</button>
+  <div id="pairReader" class="hidden"><div id="pairQrReader"></div></div>
+  <div id="pairMessage" class="message">Ожидание действия.</div>
+  <div id="pairDebug" class="debug hidden"></div>
 </section>
 
 <section class="card hidden" id="scanCard">
   <h2>📷 Сканирование услуги</h2>
-  <p>Наведите камеру на QR-код услуги из прайса ВЕАЛЬВЕД.</p>
-  <button class="primary" id="scanBtn">📷 Сканировать QR услуги</button>
-  <button class="secondary hidden" id="stopScanBtn">Остановить сканирование</button>
-  <div id="serviceReader" class="hidden" style="margin-top:12px"><div id="serviceQrReader"></div></div>
+  <p>После подключения наведите камеру на QR-код услуги из прайса.</p>
+  <button id="scanBtn" class="primary">📷 Сканировать QR услуги</button>
+  <button id="scanStopBtn" class="secondary hidden">Остановить камеру</button>
+  <div id="serviceReader" class="hidden"><div id="serviceQrReader"></div></div>
   <div id="result" class="result">
-    <div class="result-title" id="resultName"></div>
-    <div class="result-price" id="resultPrice"></div>
-    <div class="small" id="resultStatus"></div>
-    <div class="code" id="resultCode"></div>
+    <div id="resultTitle" class="result-title"></div>
+    <div id="resultSub" class="result-sub"></div>
   </div>
 </section>
 
-<section class="card hidden" id="connectionCard">
-  <h2>🟢 Подключение активно</h2>
-  <p id="connectionInfo">Телефон подключён к компьютеру.</p>
-  <button class="danger" id="disconnectBtn">Отключить телефон</button>
+<section class="card hidden" id="connectedCard">
+  <h2>🟢 Телефон подключён</h2>
+  <p>Соединение с сайтом клиники активно. Отсканированные услуги будут отправляться на компьютер.</p>
+  <button id="disconnectBtn" class="danger">Отключить компьютер</button>
 </section>
 
 <section class="card">
-  <h2>📋 История сканирования</h2>
-  <div id="history" class="log"><div class="small">Пока ничего не отсканировано.</div></div>
-  <button class="secondary" id="clearHistoryBtn">Очистить историю телефона</button>
+  <h2>📋 История</h2>
+  <div id="history" class="history"><div class="small">Пока ничего не отсканировано.</div></div>
+  <button id="clearHistoryBtn" class="secondary">Очистить историю</button>
 </section>
 
-<div class="notice"><b>Важно:</b> камера работает на HTTPS. Поэтому открывайте сайт через GitHub Pages, а не как <b>file://</b>.</div>
+<div class="notice">
+  Камера работает только через <b>HTTPS</b>. Открывайте эту страницу через GitHub Pages.
+  Для сопряжения телефон и компьютер должны иметь доступ к интернету, чтобы PeerJS смог установить сигнализацию WebRTC.
+</div>
+
 </div>
 
 <script>
 "use strict";
-const STORAGE_KEY="vealved_phone_scanner_v2";
-let peer=null,conn=null,pairScanner=null,serviceScanner=null,busy=false,connected=false,currentPair=null;
+
+/*
+  ВАЖНО:
+  Этот телефонный сайт НЕ создаёт отдельный "ПК-сайт".
+  Он подключается к Peer ID, который выдаёт основной сайт клиники.
+
+  Протокол совместим с текущим сайтом ПК:
+    QR: VEALVED:PAIR:{JSON}
+    phone -> PAIR_HELLO
+    PC    -> PAIR_RESULT
+    phone -> SERVICE
+*/
+
+const PEER_OPTIONS={
+  host:"0.peerjs.com",
+  port:443,
+  path:"/",
+  secure:true,
+  debug:1,
+  config:{
+    iceServers:[
+      {urls:"stun:stun.l.google.com:19302"}
+    ]
+  }
+};
+
+const HISTORY_KEY="vealved_phone_history_v3";
+let peer=null;
+let connection=null;
+let pairScanner=null;
+let serviceScanner=null;
+let connected=false;
+let connectionTimer=null;
+let scanBusy=false;
+let lastServiceRaw="";
+let lastServiceAt=0;
+
 const $=id=>document.getElementById(id);
-function setStatus(t,good=false){$("statusText").textContent=t;$("statusDot").className="dot"+(good?" good":"")}
-function msg(t){$("pairMessage").textContent=t||""}
-function randomId(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="",a=new Uint32Array(10);crypto.getRandomValues(a);for(const n of a)s+=c[n%c.length];return s}
-function parsePair(raw){
-  const p="VEALVED:PAIR:";if(typeof raw!=="string"||!raw.startsWith(p))return null;
-  try{const x=JSON.parse(raw.slice(p.length));return x&&x.v===3&&x.peerId&&x.session&&x.secret?x:null}catch(e){return null}
+
+function status(text,type=""){
+  $("statusText").textContent=text;
+  $("dot").className="dot"+(type?" "+type:"");
 }
-function parseService(raw){
-  const p="VEALVED:SERVICE:";if(typeof raw!=="string"||!raw.startsWith(p))return null;
-  const id=raw.slice(p.length).trim();return id?{id}:null;
+function message(text){$("pairMessage").textContent=text||""}
+function debug(text){
+  $("pairDebug").classList.remove("hidden");
+  $("pairDebug").textContent=text||"";
 }
-function history(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]")}catch(e){return[]}}
-function renderHistory(){
-  const a=history();$("history").innerHTML=a.length?a.map(x=>`<div class="log-item"><b>${String(x.name||"Услуга").replace(/[&<>]/g,"")}</b>${x.price?" — "+x.price:""}<div class="small">ID: ${x.id} · ${new Date(x.time).toLocaleString("ru-RU")}</div></div>`).join(""):'<div class="small">Пока ничего не отсканировано.</div>'
+function hideDebug(){$("pairDebug").classList.add("hidden");$("pairDebug").textContent=""}
+
+function errorText(err){
+  if(!err)return "неизвестная ошибка";
+  const t=err.type||err.name||"error";
+  const map={
+    "peer-unavailable":"компьютер сейчас недоступен или его Peer ID уже закрыт",
+    "network":"нет соединения с сервером PeerJS",
+    "server-error":"сервер PeerJS недоступен",
+    "socket-error":"ошибка связи с сервером PeerJS",
+    "socket-closed":"соединение с сервером PeerJS закрыто",
+    "webrtc":"ошибка WebRTC между устройствами",
+    "browser-incompatible":"браузер не поддерживает нужную функцию WebRTC",
+    "unavailable-id":"этот Peer ID уже занят"
+  };
+  return map[t] ? map[t]+" ("+t+")" : t;
 }
-function addHistory(x){const a=history();a.unshift(x);localStorage.setItem(STORAGE_KEY,JSON.stringify(a.slice(0,50)));renderHistory()}
-function closeScanner(s){
+
+function makePhoneId(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const a=new Uint32Array(8);crypto.getRandomValues(a);
+  return "phone-"+Date.now().toString(36)+"-"+Array.from(a,n=>chars[n%chars.length]).join("");
+}
+
+function parsePairQR(raw){
+  const prefix="VEALVED:PAIR:";
+  if(typeof raw!=="string" || !raw.startsWith(prefix))return null;
   try{
-    if(s==="pair"&&pairScanner){pairScanner.clear().catch(()=>{});pairScanner.stop().catch(()=>{});pairScanner=null}
-    if(s==="service"&&serviceScanner){serviceScanner.clear().catch(()=>{});serviceScanner.stop().catch(()=>{});serviceScanner=null}
+    const data=JSON.parse(raw.slice(prefix.length));
+    if(!data || data.v!==3 || !data.peerId || !data.session || !data.secret)return null;
+    return data;
+  }catch(e){return null}
+}
+
+function parseServiceQR(raw){
+  const prefix="VEALVED:SERVICE:";
+  if(typeof raw!=="string" || !raw.startsWith(prefix))return null;
+  const id=raw.slice(prefix.length).trim();
+  return id ? {id} : null;
+}
+
+function stopScanner(which){
+  try{
+    if(which==="pair" && pairScanner){
+      pairScanner.stop().catch(()=>{});
+      pairScanner.clear().catch(()=>{});
+      pairScanner=null;
+    }
+    if(which==="service" && serviceScanner){
+      serviceScanner.stop().catch(()=>{});
+      serviceScanner.clear().catch(()=>{});
+      serviceScanner=null;
+    }
   }catch(e){}
 }
-async function startPair(){
-  if(!window.Html5Qrcode){msg("Не загрузился модуль камеры.");return}
-  closeScanner("pair");$("pairReader").classList.remove("hidden");$("pairBtn").classList.add("hidden");$("stopPairBtn").classList.remove("hidden");msg("Запрашиваем разрешение камеры…");
+
+async function startPairScanner(){
+  if(!window.isSecureContext){
+    status("Нужен HTTPS","bad");
+    message("GitHub Pages должен открываться по https://.");
+    return;
+  }
+  if(!window.Html5Qrcode){
+    message("Не загрузился модуль QR-сканирования. Обновите страницу.");
+    return;
+  }
+
+  stopScanner("pair");
+  $("pairReader").classList.remove("hidden");
+  $("pairBtn").classList.add("hidden");
+  $("pairStopBtn").classList.remove("hidden");
+  hideDebug();
+  message("Запрашиваем разрешение камеры…");
+
   pairScanner=new Html5Qrcode("pairQrReader");
+
   try{
-    await pairScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:260}},async text=>{
-      const d=parsePair(text);if(!d||busy)return;busy=true;stopPair();connectToPC(d)
-    },()=>{});
-    msg("Наведите камеру на QR-код сопряжения на компьютере.")
-  }catch(e){console.error(e);msg("Камера не запустилась. Разрешите камеру в браузере.");stopPair()}
+    await pairScanner.start(
+      {facingMode:{ideal:"environment"}},
+      {fps:10,qrbox:{width:270,height:270}},
+      text=>{
+        const pair=parsePairQR(text);
+        if(!pair || scanBusy)return;
+        scanBusy=true;
+        stopPairScannerUI();
+        connectToComputer(pair);
+      },
+      ()=>{}
+    );
+    message("Наведите камеру на QR-код сопряжения на компьютере.");
+  }catch(e){
+    console.error("[PAIR CAMERA]",e);
+    message("Не удалось открыть камеру. Разрешите камеру для этого сайта в настройках браузера.");
+    stopPairScannerUI();
+  }
 }
-function stopPair(){closeScanner("pair");$("pairReader").classList.add("hidden");$("pairBtn").classList.remove("hidden");$("stopPairBtn").classList.add("hidden");busy=false}
-function connectToPC(d){
-  currentPair=d;setStatus("Подключение…");msg("QR найден. Устанавливаем соединение…");
+
+function stopPairScannerUI(){
+  stopScanner("pair");
+  $("pairReader").classList.add("hidden");
+  $("pairBtn").classList.remove("hidden");
+  $("pairStopBtn").classList.add("hidden");
+}
+
+function destroyPeer(){
+  if(connection){try{connection.close()}catch(e){}}
+  connection=null;
+  if(peer){try{peer.destroy()}catch(e){}}
+  peer=null;
+  if(connectionTimer){clearTimeout(connectionTimer);connectionTimer=null}
+}
+
+function connectToComputer(pair){
+  destroyPeer();
+  connected=false;
+  status("Подключаемся…","warn");
+  message("QR распознан. Подключаемся к компьютеру…");
+
+  const phoneId=makePhoneId();
+
   try{
-    if(peer)peer.destroy();peer=new Peer({debug:0});
-    peer.on("open",()=>{conn=peer.connect(d.peerId,{reliable:true});attach(conn,d)});
-    peer.on("error",e=>{console.error(e);setStatus("Ошибка подключения");msg("Не удалось подключиться: "+(e.type||"ошибка"));busy=false})
-  }catch(e){console.error(e);setStatus("Ошибка подключения");msg("Не удалось создать соединение.");busy=false}
+    peer=new Peer(undefined,PEER_OPTIONS);
+
+    peer.on("open",peerId=>{
+      debug(
+        "PeerJS готов.\n"+
+        "Телефон: "+peerId+"\n"+
+        "ПК: "+pair.peerId+"\n"+
+        "Сессия: "+pair.session
+      );
+
+      message("Сервер связи найден. Подключаемся к компьютеру…");
+
+      try{
+        connection=peer.connect(pair.peerId,{
+          reliable:true,
+          serialization:"json",
+          metadata:{type:"VEALVED_PHONE",version:3}
+        });
+        attachConnection(connection,pair,phoneId);
+      }catch(e){
+        failConnection("Не удалось создать канал: "+e.message);
+      }
+    });
+
+    peer.on("error",err=>{
+      console.error("[PHONE PEER ERROR]",err);
+      failConnection("PeerJS: "+errorText(err));
+    });
+
+    peer.on("disconnected",()=>{
+      if(!connected){
+        status("Связь с сервером потеряна","bad");
+        message("PeerJS отключился до завершения сопряжения. Нажмите «Сопрячь с компьютером» ещё раз.");
+      }
+    });
+
+    connectionTimer=setTimeout(()=>{
+      if(!connected){
+        failConnection("Компьютер не ответил за 20 секунд. Проверьте, что на ПК открыт экран «Сопрячь телефон» и QR ещё активен.");
+      }
+    },20000);
+
+  }catch(e){
+    failConnection("Ошибка запуска PeerJS: "+e.message);
+  }
 }
-function attach(c,d){
-  conn=c;
-  c.on("open",()=>{c.send({type:"PAIR_HELLO",v:3,session:d.session,secret:d.secret,phoneId:"phone-"+Date.now().toString(36)+"-"+randomId()});msg("Проверяем сопряжение…")});
-  c.on("data",m=>{
-    if(!m)return;
-    if(m.type==="PAIR_CHALLENGE"){try{c.send({type:"PAIR_HELLO",v:3,session:d.session,secret:d.secret,phoneId:"phone-"+Date.now().toString(36)})}catch(e){}return}
-    if(m.type==="PAIR_RESULT"){
-      if(m.ok){connected=true;busy=false;setStatus("Телефон подключён",true);msg("Готово. Теперь можно сканировать QR услуг.");$("scanCard").classList.remove("hidden");$("connectionCard").classList.remove("hidden");$("pairCard").classList.add("hidden")}
-      else{setStatus("Сопряжение отклонено");msg("Компьютер отклонил код. Создайте новый QR на ПК.");busy=false}
+
+function attachConnection(conn,pair,phoneId){
+  if(!conn)return;
+
+  let helloSent=false;
+
+  conn.on("open",()=>{
+    message("Канал с компьютером открыт. Проверяем сопряжение…");
+
+    /*
+      В текущем ПК-сайте есть PAIR_CHALLENGE.
+      Отправляем HELLO только один раз — после challenge.
+      Если старый ПК не прислал challenge, даём ему небольшой fallback.
+    */
+    const sendHello=()=>{
+      if(helloSent || !conn || !conn.open)return;
+      helloSent=true;
+      try{
+        conn.send({
+          type:"PAIR_HELLO",
+          v:3,
+          session:pair.session,
+          secret:pair.secret,
+          phoneId:phoneId
+        });
+        message("Код сопряжения отправлен. Ждём подтверждение ПК…");
+      }catch(e){
+        failConnection("Не удалось отправить данные сопряжения: "+e.message);
+      }
+    };
+
+    const fallback=setTimeout(sendHello,1200);
+
+    conn.__pairFallback=fallback;
+    conn.__sendHello=sendHello;
+  });
+
+  conn.on("data",data=>{
+    if(!data)return;
+
+    if(data.type==="PAIR_CHALLENGE"){
+      if(conn.__pairFallback)clearTimeout(conn.__pairFallback);
+      conn.__sendHello?.();
+      return;
+    }
+
+    if(data.type==="PAIR_RESULT"){
+      if(conn.__pairFallback)clearTimeout(conn.__pairFallback);
+
+      if(data.ok===true){
+        if(connectionTimer)clearTimeout(connectionTimer);
+        connected=true;
+        scanBusy=false;
+        status("Телефон подключён","good");
+        message("Сопряжение успешно. Теперь можно сканировать QR услуг.");
+
+        $("pairCard").classList.add("hidden");
+        $("scanCard").classList.remove("hidden");
+        $("connectedCard").classList.remove("hidden");
+      }else{
+        failConnection("Компьютер отклонил сопряжение. Создайте новый QR на компьютере.");
+      }
+      return;
+    }
+
+    if(data.type==="PONG")return;
+  });
+
+  conn.on("close",()=>{
+    if(!connected){
+      failConnection("Компьютер закрыл соединение до завершения сопряжения.");
+    }else{
+      disconnect(true,"Соединение с компьютером закрыто.");
     }
   });
-  c.on("close",()=>disconnect(false));
-  c.on("error",e=>{console.error(e);setStatus("Ошибка соединения");msg("Ошибка соединения с компьютером.")})
+
+  conn.on("error",err=>{
+    console.error("[PHONE DATA ERROR]",err);
+    failConnection("Ошибка канала: "+errorText(err));
+  });
 }
-async function startService(){
-  if(!connected||!conn||!conn.open){alert("Сначала сопрягите телефон с компьютером.");return}
-  closeScanner("service");$("serviceReader").classList.remove("hidden");$("scanBtn").classList.add("hidden");$("stopScanBtn").classList.remove("hidden");serviceScanner=new Html5Qrcode("serviceQrReader");
-  try{await serviceScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:260}},async text=>{const x=parseService(text);if(!x||busy)return;busy=true;sendService(x,text)},()=>{})}
-  catch(e){console.error(e);alert("Не удалось запустить камеру. Проверьте разрешение.");stopService()}
+
+function failConnection(text){
+  if(connectionTimer){clearTimeout(connectionTimer);connectionTimer=null}
+  connected=false;
+  scanBusy=false;
+  try{connection?.close()}catch(e){}
+  try{peer?.destroy()}catch(e){}
+  connection=null;peer=null;
+
+  status("Ошибка подключения","bad");
+  message(text);
+  debug(
+    text+"\n\n"+
+    "Что проверить:\n"+
+    "1. На ПК открыт экран «Сопрячь телефон».\n"+
+    "2. QR создан заново и не устарел.\n"+
+    "3. На телефоне и ПК есть интернет.\n"+
+    "4. Оба сайта открыты по HTTPS.\n"+
+    "5. Не блокируется PeerJS через сеть/VPN/фильтр."
+  );
+  $("pairCard").classList.remove("hidden");
+  $("scanCard").classList.add("hidden");
+  $("connectedCard").classList.add("hidden");
 }
-function stopService(){closeScanner("service");$("serviceReader").classList.add("hidden");$("scanBtn").classList.remove("hidden");$("stopScanBtn").classList.add("hidden");busy=false}
-function sendService(x,raw){
-  stopService();
+
+async function startServiceScanner(){
+  if(!connected || !connection || !connection.open){
+    alert("Сначала сопрягите телефон с компьютером.");
+    return;
+  }
+  if(!window.Html5Qrcode){
+    alert("Модуль QR-сканирования не загрузился.");
+    return;
+  }
+
+  stopScanner("service");
+  $("serviceReader").classList.remove("hidden");
+  $("scanBtn").classList.add("hidden");
+  $("scanStopBtn").classList.remove("hidden");
+
+  serviceScanner=new Html5Qrcode("serviceQrReader");
+
   try{
-    conn.send({type:"SERVICE",v:3,id:x.id,name:"",price:null,time:new Date().toISOString()});
-    $("result").classList.add("show");$("resultName").textContent="Услуга ID "+x.id;$("resultPrice").textContent="Отправлено на компьютер";$("resultStatus").textContent="✓ QR услуги передан в кассу";$("resultCode").textContent=raw;
-    addHistory({id:x.id,name:"Услуга ID "+x.id,price:"",time:new Date().toISOString()})
-  }catch(e){$("result").classList.add("show");$("resultName").textContent="Ошибка";$("resultPrice").textContent="Не удалось передать услугу";$("resultStatus").textContent="Проверьте соединение.";$("resultCode").textContent=raw}
-  setTimeout(()=>busy=false,700)
+    await serviceScanner.start(
+      {facingMode:{ideal:"environment"}},
+      {fps:10,qrbox:{width:270,height:270}},
+      text=>{
+        const service=parseServiceQR(text);
+        if(!service)return;
+
+        const now=Date.now();
+        if(text===lastServiceRaw && now-lastServiceAt<1800)return;
+        lastServiceRaw=text;lastServiceAt=now;
+
+        if(scanBusy)return;
+        scanBusy=true;
+        sendService(service,text);
+      },
+      ()=>{}
+    );
+  }catch(e){
+    console.error("[SERVICE CAMERA]",e);
+    alert("Не удалось открыть камеру. Разрешите камеру для этого сайта.");
+    stopServiceScannerUI();
+  }
 }
-function disconnect(showPair=true){
-  try{conn&&conn.close()}catch(e){}try{peer&&peer.destroy()}catch(e){}
-  conn=null;peer=null;connected=false;closeScanner("pair");closeScanner("service");$("scanCard").classList.add("hidden");$("connectionCard").classList.add("hidden");$("pairCard").classList.remove("hidden");$("result").classList.remove("show");setStatus("Телефон не подключён");if(showPair)msg("Можно выполнить новое сопряжение.");busy=false
+
+function stopServiceScannerUI(){
+  stopScanner("service");
+  $("serviceReader").classList.add("hidden");
+  $("scanBtn").classList.remove("hidden");
+  $("scanStopBtn").classList.add("hidden");
+  scanBusy=false;
 }
-$("pairBtn").onclick=startPair;$("stopPairBtn").onclick=stopPair;$("scanBtn").onclick=startService;$("stopScanBtn").onclick=stopService;$("disconnectBtn").onclick=()=>disconnect(true);
-$("clearHistoryBtn").onclick=()=>{if(confirm("Очистить историю сканирования?")){localStorage.removeItem(STORAGE_KEY);renderHistory()}};
+
+function sendService(service,raw){
+  stopServiceScannerUI();
+
+  if(!connection || !connection.open){
+    scanBusy=false;
+    alert("Телефон больше не подключён к компьютеру.");
+    return;
+  }
+
+  const messageData={
+    type:"SERVICE",
+    v:3,
+    id:service.id,
+    name:"",
+    price:null,
+    time:new Date().toISOString()
+  };
+
+  try{
+    connection.send(messageData);
+
+    $("result").classList.add("show");
+    $("resultTitle").textContent="Услуга отправлена";
+    $("resultSub").textContent="ID услуги: "+service.id+" · компьютер получил QR";
+
+    addHistory({
+      id:service.id,
+      time:messageData.time
+    });
+  }catch(e){
+    $("result").classList.add("show");
+    $("resultTitle").textContent="Не удалось отправить";
+    $("resultSub").textContent="Соединение с компьютером потеряно.";
+    failConnection("Ошибка передачи услуги: "+e.message);
+  }finally{
+    setTimeout(()=>scanBusy=false,500);
+  }
+}
+
+function addHistory(item){
+  let arr=[];
+  try{arr=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]")}catch(e){}
+  arr.unshift(item);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(arr.slice(0,50)));
+  renderHistory();
+}
+function renderHistory(){
+  let arr=[];
+  try{arr=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]")}catch(e){}
+  if(!arr.length){
+    $("history").innerHTML='<div class="small">Пока ничего не отсканировано.</div>';
+    return;
+  }
+  $("history").innerHTML=arr.map(x=>`
+    <div class="item">
+      <b>Услуга ID ${escapeHtml(x.id)}</b>
+      <div class="small">${escapeHtml(new Date(x.time).toLocaleString("ru-RU"))}</div>
+    </div>`).join("");
+}
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function disconnect(showMessage=true,text="Телефон отключён."){
+  stopScanner("pair");stopScanner("service");
+  destroyPeer();
+  connected=false;scanBusy=false;
+
+  $("pairCard").classList.remove("hidden");
+  $("scanCard").classList.add("hidden");
+  $("connectedCard").classList.add("hidden");
+  $("result").classList.remove("show");
+
+  status("Телефон не подключён");
+  if(showMessage)message(text);
+}
+
+$("pairBtn").addEventListener("click",startPairScanner);
+$("pairStopBtn").addEventListener("click",()=>{
+  stopPairScannerUI();
+  message("Сканирование сопряжения остановлено.");
+});
+$("scanBtn").addEventListener("click",startServiceScanner);
+$("scanStopBtn").addEventListener("click",()=>{
+  stopServiceScannerUI();
+  message("Сканирование услуги остановлено.");
+});
+$("disconnectBtn").addEventListener("click",()=>disconnect(true));
+$("clearHistoryBtn").addEventListener("click",()=>{
+  if(confirm("Очистить историю сканирования на этом телефоне?")){
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  }
+});
+
+window.addEventListener("pagehide",()=>disconnect(false));
 renderHistory();
+
+if(!window.isSecureContext){
+  status("Нужен HTTPS","bad");
+  message("Откройте сайт через GitHub Pages.");
+}
+if(!window.isSecureContext && location.hostname==="localhost"){
+  status("Локальный режим");
+}
 </script>
 </body>
 </html>
